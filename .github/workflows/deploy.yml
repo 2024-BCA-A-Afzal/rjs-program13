@@ -11,6 +11,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: github-pages
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,14 +23,32 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Check Repository Files
+      - name: Check and Create package.json
         run: |
-          echo "Current directory:"
-          pwd
+          if [ ! -f package.json ]; then
+            cat > package.json <<'EOF'
+          {
+            "name": "prg13",
+            "version": "1.0.0",
+            "private": true,
+            "type": "module",
+            "scripts": {
+              "build": "vite build"
+            },
+            "dependencies": {
+              "react": "^18.2.0",
+              "react-dom": "^18.2.0"
+            },
+            "devDependencies": {
+              "@vitejs/plugin-react": "^4.2.0",
+              "vite": "^5.0.0"
+            }
+          }
+          EOF
+          fi
+
           echo "Repository files:"
           ls -la
-          echo "Searching for package.json:"
-          find . -name package.json -not -path '*/node_modules/*'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -36,8 +58,30 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      - name: Create Vite Config if Missing
+        run: |
+          if [ ! -f vite.config.js ]; then
+            cat > vite.config.js <<'EOF'
+          import { defineConfig } from 'vite'
+          import react from '@vitejs/plugin-react'
+
+          export default defineConfig({
+            plugins: [react()],
+            base: '/rjs-program13/'
+          })
+          EOF
+          fi
+
       - name: Build React Application
         run: npm run build
+
+      - name: Verify Build Output
+        run: |
+          test -f dist/index.html
+          ls -la dist
+
+      - name: Setup GitHub Pages
+        uses: actions/configure-pages@v5
 
       - name: Upload Website
         uses: actions/upload-pages-artifact@v3
