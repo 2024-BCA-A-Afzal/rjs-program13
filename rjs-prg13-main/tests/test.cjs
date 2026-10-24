@@ -1,88 +1,64 @@
-const fs = require("fs");
 
-const file = fs.readFileSync("src/App.js", "utf8");
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
+import App from '../src/App';
 
-let score = 0;
+test('displays feedback form', () => {
+  render(<App />);
+  expect(screen.getByText('Student Feedback Form')).toBeInTheDocument();
+});
 
-function check(condition, message, marks) {
-    if (condition) {
-        console.log(`PASS: ${message} (+${marks})`);
-        score += marks;
-    } else {
-        console.log(`FAIL: ${message}`);
-    }
-}
+test('validates empty name', () => {
+  render(<App />);
+  fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+  expect(screen.getByText('Please enter your name')).toBeInTheDocument();
+});
 
-// Test 1 – useState
-check(
-    file.includes("useState"),
-    "useState Hook is used",
-    2
-);
+test('validates empty email', () => {
+  render(<App />);
+  fireEvent.change(screen.getByLabelText(/student name/i), {
+    target: { value: 'Afzal' }
+  });
+  fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+  expect(screen.getByText('Please enter your email')).toBeInTheDocument();
+});
 
-// Test 2 – onChange
-check(
-    file.includes("onChange"),
-    "onChange event is used",
-    1
-);
+test('validates invalid email', () => {
+  render(<App />);
+  fireEvent.change(screen.getByLabelText(/student name/i), {
+    target: { value: 'Afzal' }
+  });
+  fireEvent.change(screen.getByLabelText(/email/i), {
+    target: { value: 'afzalexample.com' }
+  });
+  fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+  expect(screen.getByText('Please enter a valid email')).toBeInTheDocument();
+});
 
-// Test 3 – onSubmit
-check(
-    file.includes("onSubmit"),
-    "onSubmit event is used",
-    1
-);
+test('validates empty feedback', () => {
+  render(<App />);
+  fireEvent.change(screen.getByLabelText(/student name/i), {
+    target: { value: 'Afzal' }
+  });
+  fireEvent.change(screen.getByLabelText(/email/i), {
+    target: { value: 'afzal@example.com' }
+  });
+  fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+  expect(screen.getByText('Please enter your feedback')).toBeInTheDocument();
+});
 
-// Test 4 – Name validation
-check(
-    file.toLowerCase().includes("name"),
-    "Name field is implemented",
-    1
-);
-
-// Test 5 – Email validation
-check(
-    file.toLowerCase().includes("email") &&
-    file.includes("@"),
-    "Email validation is implemented",
-    1
-);
-
-// Test 6 – Feedback
-check(
-    file.toLowerCase().includes("feedback"),
-    "Feedback field is implemented",
-    1
-);
-
-// Test 7 – Successful submission
-check(
-    file.toLowerCase().includes("feedback submitted successfully"),
-    "Successful submission message is implemented",
-    1
-);
-
-// Test 8 – Form
-check(
-    file.includes("<form") &&
-    file.includes("</form>"),
-    "Form element is implemented",
-    1
-);
-
-// Test 9 – Submit button
-check(
-    file.includes("submit") &&
-    file.includes("button"),
-    "Submit button is implemented",
-    1
-);
-
-console.log("--------------------------------");
-console.log(`Total Marks: ${score}/10`);
-console.log("--------------------------------");
-
-if (score < 6) {
-    process.exit(1);
-}
+test('submits valid feedback', () => {
+  render(<App />);
+  fireEvent.change(screen.getByLabelText(/student name/i), {
+    target: { value: 'Afzal' }
+  });
+  fireEvent.change(screen.getByLabelText(/email/i), {
+    target: { value: 'afzal@example.com' }
+  });
+  fireEvent.change(screen.getByLabelText(/feedback/i), {
+    target: { value: 'Good practical session' }
+  });
+  fireEvent.click(screen.getByRole('button', { name: /submit/i }));
+  expect(screen.getByText('Feedback submitted successfully!')).toBeInTheDocument();
+});
