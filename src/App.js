@@ -7,29 +7,47 @@ function App() {
   const [feedback, setFeedback] = useState('');
   const [message, setMessage] = useState('');
 
-  function handleSubmit(e) {
+  const handleSubmit = (e) => {
     e.preventDefault();
 
     if (!name.trim()) {
       setMessage('Please enter your name');
-    } else if (!email.trim()) {
-      setMessage('Please enter your email');
-    } else if (!email.includes('@')) {
-      setMessage('Please enter a valid email');
-    } else if (!feedback.trim()) {
-      setMessage('Please enter your feedback');
-    } else {
-      setMessage('Feedback submitted successfully!');
+      return;
     }
-  }
+
+    if (!email.trim()) {
+      setMessage('Please enter your email');
+      return;
+    }
+
+    if (!email.includes('@')) {
+      setMessage('Please enter a valid email');
+      return;
+    }
+
+    if (!feedback.trim()) {
+      setMessage('Please enter your feedback');
+      return;
+    }
+
+    setMessage('Feedback submitted successfully!');
+  };
 
   return (
-    <div style={{ maxWidth: '450px', margin: '50px auto', padding: '24px', fontFamily: 'Arial, sans-serif', border: '1px solid #ddd', borderRadius: '12px' }}>
+    <div style={{
+      maxWidth: '450px',
+      margin: '40px auto',
+      padding: '25px',
+      fontFamily: 'Arial, sans-serif',
+      border: '1px solid #ddd',
+      borderRadius: '10px'
+    }}>
       <h1>Student Feedback Form</h1>
 
       <form onSubmit={handleSubmit}>
-        <label>Student Name</label>
+        <label htmlFor="name">Student Name</label>
         <input
+          id="name"
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -37,8 +55,9 @@ function App() {
           style={{ display: 'block', width: '95%', padding: '10px', margin: '8px 0 16px' }}
         />
 
-        <label>Email</label>
+        <label htmlFor="email">Email</label>
         <input
+          id="email"
           type="text"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -46,17 +65,16 @@ function App() {
           style={{ display: 'block', width: '95%', padding: '10px', margin: '8px 0 16px' }}
         />
 
-        <label>Feedback</label>
+        <label htmlFor="feedback">Feedback</label>
         <textarea
+          id="feedback"
           value={feedback}
           onChange={(e) => setFeedback(e.target.value)}
           placeholder="Enter your feedback"
           style={{ display: 'block', width: '95%', padding: '10px', margin: '8px 0 16px' }}
         />
 
-        <button type="submit" style={{ padding: '10px 20px' }}>
-          Submit
-        </button>
+        <button type="submit">Submit</button>
       </form>
 
       {message && <p role="alert">{message}</p>}
